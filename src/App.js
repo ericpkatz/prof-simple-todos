@@ -1,8 +1,9 @@
 import React, { Component} from 'react';
-import { HashRouter as Router, Link, Route } from 'react-router-dom';
+import { HashRouter as Router, Link, Route, Switch } from 'react-router-dom';
 import axios from 'axios';
 import Todos from './Todos';
 import TodoCreate from './TodoCreate';
+import TodoEdit from './TodoEdit';
 
 class App extends Component{
   constructor(){
@@ -12,6 +13,19 @@ class App extends Component{
     };
     this.destroyTodo = this.destroyTodo.bind(this);
     this.createTodo = this.createTodo.bind(this);
+    this.updateTodo = this.updateTodo.bind(this);
+  }
+  fetchTodo(id){
+    return axios.get(`/todos/${id}`)
+      .then( response => response.data);
+  }
+  updateTodo(todo){
+    return axios.put(`/todos/${todo.id}`, todo)
+      .then(response => response.data)
+      .then( todo => {
+        const todos = this.state.todos.map(_todo => _todo.id !== todo.id ? _todo : todo);
+        this.setState({ todos: todos })
+      });
   }
   createTodo(todo){
     return axios.post('/todos', todo)
@@ -31,7 +45,7 @@ class App extends Component{
   }
   render(){
     const { todos } = this.state;
-    const { destroyTodo, createTodo } = this;
+    const { destroyTodo, createTodo, fetchTodo, updateTodo } = this;
     return (
       <Router>
         <div>
@@ -43,8 +57,11 @@ class App extends Component{
               <Link to='/todos/create'>Create A Todo</Link>
             </li>
           </ul>
-          <Route path='/todos/create' render={({ history })=> <TodoCreate history={ history } createTodo={ createTodo } /> } />
-          <Route exact path='/todos' render={()=> <Todos todos={ todos} destroyTodo={ destroyTodo } /> } />
+          <Switch>
+            <Route path='/todos/create' render={({ history })=> <TodoCreate history={ history } createTodo={ createTodo } /> } />
+            <Route path='/todos/:id' render={({ history, match })=> <TodoEdit history={ history } updateTodo={ updateTodo } id={ match.params.id*1 } fetchTodo={ fetchTodo }/> } />
+          </Switch>
+          <Route path='/todos' render={()=> <Todos todos={ todos} destroyTodo={ destroyTodo } /> } />
         </div>
       </Router>
     );

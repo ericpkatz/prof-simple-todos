@@ -20,8 +20,21 @@ app.get('/todos', (req, res, next)=> {
     .catch(next);
 });
 
+app.get('/todos/:id', (req, res, next)=> {
+  Todo.findById(req.params.id)
+    .then( todo => res.send(todo))
+    .catch(next);
+});
+
 app.post('/todos', (req, res, next)=> {
   Todo.create(req.body)
+    .then( todo => res.send(todo))
+    .catch(next);
+});
+
+app.put('/todos/:id', (req, res, next)=> {
+  Todo.findById(req.params.id)
+    .then( todo => todo.update(req.body))
     .then( todo => res.send(todo))
     .catch(next);
 });
